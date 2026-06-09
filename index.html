@@ -34,7 +34,6 @@
             overflow: hidden;
         }
 
-        /* Effet de cercles lumineux en arrière-plan */
         .blur-circle {
             position: absolute;
             background: rgba(99, 102, 241, 0.15);
@@ -125,10 +124,6 @@
             transform: translateY(-1px);
         }
 
-        button:active {
-            transform: translateY(1px);
-        }
-
         button:disabled {
             background: var(--text-muted);
             opacity: 0.5;
@@ -136,7 +131,6 @@
             transform: none;
         }
 
-        /* Animation de chargement */
         .spinner {
             display: none;
             width: 18px;
@@ -181,7 +175,7 @@
 
     <div class="container">
         <h1>Webtoon Extractor</h1>
-        <p class="subtitle">Convertissez vos séries préférées au format CBZ pour Kobo</p>
+        <p class="subtitle">Téléchargez vos chapitres directement sur votre appareil</p>
         
         <div class="input-group">
             <input type="text" id="urlInput" placeholder="Collez l'adresse du Webtoon ici...">
@@ -189,7 +183,7 @@
 
         <button id="downloadBtn" onclick="triggerDownload()">
             <span class="spinner" id="btnSpinner"></span>
-            <span id="btnText">Télécharger en CBZ</span>
+            <span id="btnText">Générer et Télécharger</span>
         </button>
 
         <div id="statusMessage"></div>
@@ -210,11 +204,10 @@
                 return;
             }
 
-            // Verrouillage de l'interface pendant l'extraction
             urlInput.disabled = true;
             downloadBtn.disabled = true;
             btnSpinner.style.display = 'block';
-            btnText.innerText = 'Extraction en cours...';
+            btnText.innerText = 'Conversion en cours (Patientez)...';
             statusMessage.style.display = 'none';
 
             try {
@@ -226,22 +219,40 @@
                     body: JSON.stringify({ url: url })
                 });
 
-                const data = await response.json();
-
                 if (response.ok) {
-                    showStatus(data.message, "success");
-                    urlInput.value = ''; // On vide le champ si c'est réussi
+                    // Récupération du nom du fichier envoyé par les headers
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = 'webtoon.cbz';
+                    if (contentDisposition && contentDisposition.includes('filename=')) {
+                        filename = contentDisposition.split('filename=')[1].split(';')[0].replace(/"/g, '');
+                    }
+
+                    // On transforme la réponse en fichier téléchargeable (Blob)
+                    const blob = await response.blob();
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    
+                    // Déclenchement du téléchargement dans le navigateur
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    
+                    window.URL.revokeObjectURL(downloadUrl);
+                    showStatus("Téléchargement lancé sur votre appareil !", "success");
+                    urlInput.value = '';
                 } else {
-                    showStatus(data.detail || "Une erreur est survenue lors du processus.", "error");
+                    const errorData = await response.json();
+                    showStatus(errorData.detail || "Une erreur est survenue lors du processus.", "error");
                 }
             } catch (error) {
-                showStatus("Impossible de joindre le serveur local.", "error");
+                showStatus("Impossible de joindre le serveur.", "error");
             } finally {
-                // Libération de l'interface
                 urlInput.disabled = false;
                 downloadBtn.disabled = false;
                 btnSpinner.style.display = 'none';
-                btnText.innerText = 'Télécharger en CBZ';
+                btnText.innerText = 'Générer et Télécharger';
             }
         }
 

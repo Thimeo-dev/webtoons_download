@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-app = FastAPI(title="Webtoon Downloader Cloud")
+app = FastAPI(title="Webtoon Downloader Cloud")  # <-- Cette ligne exacte doit exister
 
 # Dossier temporaire sur Render pour stocker le fichier avant l'envoi
 DOWNLOAD_DIR = os.path.join(os.getcwd(), "temp_downloads")

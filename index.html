@@ -18,148 +18,41 @@
             --error: #ef4444;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
 
-        body {
-            background: var(--bg-gradient);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        .blur-circle {
-            position: absolute;
-            background: rgba(99, 102, 241, 0.15);
-            border-radius: 50%;
-            filter: blur(80px);
-            z-index: 0;
-        }
+        .blur-circle { position: absolute; background: rgba(99, 102, 241, 0.15); border-radius: 50%; filter: blur(80px); z-index: 0; }
         .circle-1 { width: 400px; height: 400px; top: -100px; left: -100px; }
         .circle-2 { width: 500px; height: 500px; bottom: -150px; right: -100px; }
 
-        .container {
-            position: relative;
-            z-index: 1;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            padding: 3rem;
-            border-radius: 24px;
-            width: 100%;
-            max-width: 540px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            text-align: center;
-        }
+        .container { position: relative; z-index: 1; background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); padding: 3rem; border-radius: 24px; width: 100%; max-width: 540px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; }
+        h1 { font-size: 2.25rem; font-weight: 700; letter-spacing: -0.05em; margin-bottom: 0.5rem; background: linear-gradient(to right, #ffffff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        p.subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2.5rem; }
 
-        h1 {
-            font-size: 2.25rem;
-            font-weight: 700;
-            letter-spacing: -0.05em;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to right, #ffffff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        input[type="text"] { width: 100%; padding: 1rem 1.25rem; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-main); font-size: 1rem; outline: none; margin-bottom: 1.5rem; transition: all 0.3s; }
+        input[type="text"]:focus { border-color: var(--accent); }
 
-        p.subtitle {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-bottom: 2.5rem;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 1rem 1.25rem;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            color: var(--text-main);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            outline: none;
-            margin-bottom: 1.5rem;
-        }
-
-        input[type="text"]:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-        }
-
-        button {
-            width: 100%;
-            padding: 1rem;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
+        button { width: 100%; padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         button:hover { background: var(--accent-hover); transform: translateY(-1px); }
         button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-        /* Zone de progression */
-        .progress-zone {
-            display: none;
-            margin-top: 2rem;
-            text-align: left;
+        .progress-zone { display: none; margin-top: 2rem; text-align: left; }
+        .progress-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        
+        .progress-bar-container { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 999px; overflow: hidden; position: relative; }
+        /* Animation de chargement infini */
+        .progress-bar-fill { width: 40%; height: 100%; background: linear-gradient(to right, #6366f1, #a5b4fc); border-radius: 999px; position: absolute; animation: moveProgress 1.5s infinite ease-in-out; }
+        
+        @keyframes moveProgress {
+            0% { left: -40%; }
+            100% { left: 100%; }
         }
 
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-        }
-
-        .progress-bar-container {
-            width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 999px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(to right, #6366f1, #a5b4fc);
-            border-radius: 999px;
-            transition: width 0.3s ease;
-        }
-
-        /* Bouton de téléchargement final */
-        #actionBtnZone {
-            display: none;
-            margin-top: 2rem;
-        }
-
-        .success-btn {
-            background: var(--success);
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-        }
+        #actionBtnZone { display: none; margin-top: 2rem; }
+        .success-btn { background: var(--success); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3); }
         .success-btn:hover { background: var(--success-hover); }
 
-        #statusMessage {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            display: none;
-        }
+        #statusMessage { margin-top: 1.5rem; padding: 1rem; border-radius: 12px; font-size: 0.9rem; display: none; }
         .msg-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; text-align: left; }
     </style>
 </head>
@@ -170,18 +63,15 @@
 
     <div class="container">
         <h1>Webtoon Extractor</h1>
-        <p class="subtitle">Suivez vos téléchargements en temps réel</p>
+        <p class="subtitle">Hébergé sur le Cloud — Prêt à extraire</p>
         
-        <input type="text" id="urlInput" placeholder="Collez l'adresse du Webtoon ici...">
+        <input type="text" id="urlInput" placeholder="Collez l'adresse complète (avec https://)...">
         <button id="startBtn" onclick="startExtraction()">Analyser et extraire</button>
 
         <div class="progress-zone" id="progressZone">
-            <div class="progress-label">
-                <span id="progressState">Téléchargement des images...</span>
-                <span id="progressPercent">0%</span>
-            </div>
+            <div class="progress-label" id="progressState">Extraction et packaging sur le serveur Cloud...</div>
             <div class="progress-bar-container">
-                <div class="progress-bar-fill" id="progressBarFill"></div>
+                <div class="progress-bar-fill"></div>
             </div>
         </div>
 
@@ -193,89 +83,58 @@
     </div>
 
     <script>
-        let eventSource = null;
-
-        function startExtraction() {
+        async function startExtraction() {
             const urlInput = document.getElementById('urlInput');
             const startBtn = document.getElementById('startBtn');
             const progressZone = document.getElementById('progressZone');
-            const progressBarFill = document.getElementById('progressBarFill');
-            const progressPercent = document.getElementById('progressPercent');
-            const progressState = document.getElementById('progressState');
             const actionBtnZone = document.getElementById('actionBtnZone');
             const statusMessage = document.getElementById('statusMessage');
 
-            const url = urlInput.value.trim();
+            let url = urlInput.value.trim();
             if (!url) {
                 alert("Veuillez entrer une URL.");
                 return;
             }
 
-            // Reset de l'interface
+            // Correction automatique si le protocole manque
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+
             urlInput.disabled = true;
             startBtn.disabled = true;
             statusMessage.style.display = 'none';
             actionBtnZone.style.display = 'none';
-            
             progressZone.style.display = 'block';
-            progressBarFill.style.width = '0%';
-            progressPercent.innerText = '0%';
-            progressState.innerText = 'Initialisation...';
 
-            // Connexion SSE au flux de progression FastAPI
-            eventSource = new EventSource(`/progress?url=${encodeURIComponent(url)}`);
+            try {
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
 
-            eventSource.addEventListener('progress', (e) => {
-                const percent = e.data;
-                progressBarFill.style.width = `${percent}%`;
-                progressPercent.innerText = `${percent}%`;
-                progressState.innerText = 'Téléchargement des pages...';
-            });
+                const data = await response.json();
 
-            eventSource.addEventListener('status', (e) => {
-                progressState.innerText = e.data;
-            });
-
-            eventSource.addEventListener('done', (e) => {
-                const filename = e.data;
-                progressState.innerText = 'Extraction complétée avec succès !';
-                progressBarFill.style.width = '100%';
-                progressPercent.innerText = '100%';
-                
-                // On configure le gros bouton vert de téléchargement
-                const finalBtn = document.getElementById('finalDownloadBtn');
-                finalBtn.onclick = () => {
-                    window.location.href = `/get-file?filename=${encodeURIComponent(filename)}`;
-                };
-                
-                actionBtnZone.style.display = 'block';
-                closeConnection();
-                urlInput.disabled = false;
-                startBtn.disabled = false;
-            });
-
-            eventSource.addEventListener('error', (e) => {
-                statusMessage.innerText = e.data;
-                statusMessage.style.display = 'block';
+                if (response.ok && data.status === "success") {
+                    progressZone.style.display = 'none';
+                    const finalBtn = document.getElementById('finalDownloadBtn');
+                    finalBtn.onclick = () => {
+                        window.location.href = `/get-file?filename=${encodeURIComponent(data.filename)}`;
+                    };
+                    actionBtnZone.style.display = 'block';
+                } else {
+                    progressZone.style.display = 'none';
+                    statusMessage.innerText = data.detail || "Une erreur est survenue pendant l'extraction.";
+                    statusMessage.style.display = 'block';
+                }
+            } catch (error) {
                 progressZone.style.display = 'none';
-                closeConnection();
-                urlInput.disabled = false;
-                startBtn.disabled = false;
-            });
-
-            eventSource.onerror = () => {
-                statusMessage.innerText = "Une erreur de connexion est survenue avec le flux du serveur.";
+                statusMessage.innerText = "Impossible de joindre le serveur ou le délai d'attente est dépassé.";
                 statusMessage.style.display = 'block';
-                closeConnection();
+            } finally {
                 urlInput.disabled = false;
                 startBtn.disabled = false;
-            };
-        }
-
-        function closeConnection() {
-            if (eventSource) {
-                eventSource.close();
-                eventSource = null;
             }
         }
     </script>

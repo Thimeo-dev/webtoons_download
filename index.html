@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webtoon Downloader</title>
+    <title>Webtoon Downloader Pro</title>
     <style>
         :root {
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
@@ -14,6 +14,7 @@
             --accent: #6366f1;
             --accent-hover: #4f46e5;
             --success: #10b981;
+            --success-hover: #059669;
             --error: #ef4444;
         }
 
@@ -75,11 +76,6 @@
             margin-bottom: 2.5rem;
         }
 
-        .input-group {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
-
         input[type="text"] {
             width: 100%;
             padding: 1rem 1.25rem;
@@ -90,16 +86,12 @@
             font-size: 1rem;
             transition: all 0.3s ease;
             outline: none;
+            margin-bottom: 1.5rem;
         }
 
         input[type="text"]:focus {
             border-color: var(--accent);
             box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        input[type="text"]::placeholder {
-            color: rgba(255, 255, 255, 0.25);
         }
 
         button {
@@ -113,37 +105,53 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
         }
 
-        button:hover {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
-        }
+        button:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-        button:disabled {
-            background: var(--text-muted);
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .spinner {
+        /* Zone de progression */
+        .progress-zone {
             display: none;
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 0.8s linear infinite;
+            margin-top: 2rem;
+            text-align: left;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
         }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(to right, #6366f1, #a5b4fc);
+            border-radius: 999px;
+            transition: width 0.3s ease;
+        }
+
+        /* Bouton de téléchargement final */
+        #actionBtnZone {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .success-btn {
+            background: var(--success);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+        }
+        .success-btn:hover { background: var(--success-hover); }
 
         #statusMessage {
             margin-top: 1.5rem;
@@ -151,21 +159,8 @@
             border-radius: 12px;
             font-size: 0.9rem;
             display: none;
-            line-height: 1.4;
-            text-align: left;
         }
-
-        .msg-success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #34d399;
-        }
-
-        .msg-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #f87171;
-        }
+        .msg-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; text-align: left; }
     </style>
 </head>
 <body>
@@ -175,92 +170,113 @@
 
     <div class="container">
         <h1>Webtoon Extractor</h1>
-        <p class="subtitle">Téléchargez vos chapitres directement sur votre appareil</p>
+        <p class="subtitle">Suivez vos téléchargements en temps réel</p>
         
-        <div class="input-group">
-            <input type="text" id="urlInput" placeholder="Collez l'adresse du Webtoon ici...">
+        <input type="text" id="urlInput" placeholder="Collez l'adresse du Webtoon ici...">
+        <button id="startBtn" onclick="startExtraction()">Analyser et extraire</button>
+
+        <div class="progress-zone" id="progressZone">
+            <div class="progress-label">
+                <span id="progressState">Téléchargement des images...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progressBarFill"></div>
+            </div>
         </div>
 
-        <button id="downloadBtn" onclick="triggerDownload()">
-            <span class="spinner" id="btnSpinner"></span>
-            <span id="btnText">Générer et Télécharger</span>
-        </button>
+        <div id="actionBtnZone">
+            <button class="success-btn" id="finalDownloadBtn">💾 Télécharger le fichier .CBZ</button>
+        </div>
 
-        <div id="statusMessage"></div>
+        <div id="statusMessage" class="msg-error"></div>
     </div>
 
     <script>
-        async function triggerDownload() {
+        let eventSource = null;
+
+        function startExtraction() {
             const urlInput = document.getElementById('urlInput');
-            const downloadBtn = document.getElementById('downloadBtn');
-            const btnSpinner = document.getElementById('btnSpinner');
-            const btnText = document.getElementById('btnText');
+            const startBtn = document.getElementById('startBtn');
+            const progressZone = document.getElementById('progressZone');
+            const progressBarFill = document.getElementById('progressBarFill');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressState = document.getElementById('progressState');
+            const actionBtnZone = document.getElementById('actionBtnZone');
             const statusMessage = document.getElementById('statusMessage');
 
             const url = urlInput.value.trim();
-
             if (!url) {
-                showStatus("Veuillez entrer une URL valide.", "error");
+                alert("Veuillez entrer une URL.");
                 return;
             }
 
+            // Reset de l'interface
             urlInput.disabled = true;
-            downloadBtn.disabled = true;
-            btnSpinner.style.display = 'block';
-            btnText.innerText = 'Conversion en cours (Patientez)...';
+            startBtn.disabled = true;
             statusMessage.style.display = 'none';
+            actionBtnZone.style.display = 'none';
+            
+            progressZone.style.display = 'block';
+            progressBarFill.style.width = '0%';
+            progressPercent.innerText = '0%';
+            progressState.innerText = 'Initialisation...';
 
-            try {
-                const response = await fetch('/download', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ url: url })
-                });
+            // Connexion SSE au flux de progression FastAPI
+            eventSource = new EventSource(`/progress?url=${encodeURIComponent(url)}`);
 
-                if (response.ok) {
-                    // Récupération du nom du fichier envoyé par les headers
-                    const contentDisposition = response.headers.get('Content-Disposition');
-                    let filename = 'webtoon.cbz';
-                    if (contentDisposition && contentDisposition.includes('filename=')) {
-                        filename = contentDisposition.split('filename=')[1].split(';')[0].replace(/"/g, '');
-                    }
+            eventSource.addEventListener('progress', (e) => {
+                const percent = e.data;
+                progressBarFill.style.width = `${percent}%`;
+                progressPercent.innerText = `${percent}%`;
+                progressState.innerText = 'Téléchargement des pages...';
+            });
 
-                    // On transforme la réponse en fichier téléchargeable (Blob)
-                    const blob = await response.blob();
-                    const downloadUrl = window.URL.createObjectURL(blob);
-                    
-                    // Déclenchement du téléchargement dans le navigateur
-                    const a = document.createElement('a');
-                    a.href = downloadUrl;
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    
-                    window.URL.revokeObjectURL(downloadUrl);
-                    showStatus("Téléchargement lancé sur votre appareil !", "success");
-                    urlInput.value = '';
-                } else {
-                    const errorData = await response.json();
-                    showStatus(errorData.detail || "Une erreur est survenue lors du processus.", "error");
-                }
-            } catch (error) {
-                showStatus("Impossible de joindre le serveur.", "error");
-            } finally {
+            eventSource.addEventListener('status', (e) => {
+                progressState.innerText = e.data;
+            });
+
+            eventSource.addEventListener('done', (e) => {
+                const filename = e.data;
+                progressState.innerText = 'Extraction complétée avec succès !';
+                progressBarFill.style.width = '100%';
+                progressPercent.innerText = '100%';
+                
+                // On configure le gros bouton vert de téléchargement
+                const finalBtn = document.getElementById('finalDownloadBtn');
+                finalBtn.onclick = () => {
+                    window.location.href = `/get-file?filename=${encodeURIComponent(filename)}`;
+                };
+                
+                actionBtnZone.style.display = 'block';
+                closeConnection();
                 urlInput.disabled = false;
-                downloadBtn.disabled = false;
-                btnSpinner.style.display = 'none';
-                btnText.innerText = 'Générer et Télécharger';
-            }
+                startBtn.disabled = false;
+            });
+
+            eventSource.addEventListener('error', (e) => {
+                statusMessage.innerText = e.data;
+                statusMessage.style.display = 'block';
+                progressZone.style.display = 'none';
+                closeConnection();
+                urlInput.disabled = false;
+                startBtn.disabled = false;
+            });
+
+            eventSource.onerror = () => {
+                statusMessage.innerText = "Une erreur de connexion est survenue avec le flux du serveur.";
+                statusMessage.style.display = 'block';
+                closeConnection();
+                urlInput.disabled = false;
+                startBtn.disabled = false;
+            };
         }
 
-        function showStatus(text, type) {
-            const statusMessage = document.getElementById('statusMessage');
-            statusMessage.innerText = text;
-            statusMessage.className = type === "success" ? "msg-success" : "msg-error";
-            statusMessage.style.display = 'block';
+        function closeConnection() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
         }
     </script>
 </body>

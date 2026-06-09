@@ -2,4 +2,4 @@ fastapi
 uvicorn
 pydantic
 webtoon-downloader
-pip install sse-starlette
+sse-starlette
